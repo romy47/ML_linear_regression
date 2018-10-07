@@ -1,10 +1,8 @@
 import pandas as pd
-import quandl, math
+import quandl, math, datetime, time, pickle
 import numpy as np
 import matplotlib.pyplot as plot
 from matplotlib import style
-import datetime
-import time
 from sklearn import preprocessing, cross_validation
 from sklearn.linear_model import LinearRegression
 
@@ -18,7 +16,7 @@ df = df[['Adj. Close', 'high_low_pct', 'pct_change', 'Adj. Volume']]
 df.fillna(-99999, inplace=True)
 
 forecast_column = 'Adj. Close'
-forecast_interval = int(math.ceil(0.005*len(df)))
+forecast_interval = int(math.ceil(0.07*len(df)))
 df['label'] = df[forecast_column].shift(-forecast_interval)
 
 #creating test and training set
@@ -26,13 +24,18 @@ X = np.array(df.drop(['label'], 1))
 X = preprocessing.scale(X)
 X_predict = X[-forecast_interval:]
 X = X[:-forecast_interval]
-
 df.dropna(inplace=True)
 y = np.array(df['label'])
-
 X_train, X_test, y_train, y_test = cross_validation.train_test_split(X, y, test_size=0.2)
-classifier = LinearRegression()
-classifier.fit(X_train, y_train)
+
+#saving classifier
+classifier = np.nan
+try:
+    classifier = pickle.load(open("linear_regression_trained.pickle", "rb"))
+except (OSError, IOError) as e:
+    classifier = LinearRegression()
+    classifier.fit(X_train, y_train)
+    pickle.dump(classifier, open("linear_regression_trained.pickle", "wb"))
 accuracy = classifier.score(X_test, y_test)
 print(accuracy)
 
