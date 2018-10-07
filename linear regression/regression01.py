@@ -1,8 +1,15 @@
 import pandas as pd
 import quandl, math
 import numpy as np
+import matplotlib.pyplot as plot
+from matplotlib import style
+import datetime
+import time
 from sklearn import preprocessing, cross_validation
 from sklearn.linear_model import LinearRegression
+
+style.use('ggplot')
+
 df = quandl.get('WIKI/GOOGL')
 df = df[['Adj. Open', 'Adj. High', 'Adj. Low', 'Adj. Close', 'Adj. Volume']]
 df['high_low_pct'] = (df['Adj. High'] - df['Adj. Low'])/df['Adj. Close'] * 100.0
@@ -32,5 +39,26 @@ print(accuracy)
 #predict data
 predicted_result = classifier.predict(X_predict)
 print(predicted_result)
+
+#plot result in graph
+last_date = df.iloc[-1].name
+# last_unix = last_date.timestamp()
+last_unix = time.mktime(last_date.timetuple())
+day = 24*60*60
+next_unix = last_unix + day
+
+df['prediction'] = np.nan
+for i in predicted_result:
+    next_date = datetime.datetime.fromtimestamp(next_unix)
+    next_unix += day
+    df.loc[next_date] = [np.nan for _ in range(len(df.columns) - 1)] + [i]
+
+df['Adj. Close'].plot()
+df['prediction'].plot()
+plot.legend(loc = 4)
+plot.xlabel('Date')
+plot.ylabel('Price')
+plot.show()
+
 # print(df.head)
 
