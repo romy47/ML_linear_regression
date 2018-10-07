@@ -28,5 +28,9 @@ classifier = LinearRegression()
 classifier.fit(X_train, y_train)
 accuracy = classifier.score(X_test, y_test)
 print(accuracy)
+
+#predict data
+predicted_result = classifier.predict(X_predict)
+print(predicted_result)
 # print(df.head)
 
